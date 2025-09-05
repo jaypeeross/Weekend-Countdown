@@ -36,31 +36,58 @@
 </head>
 <body>
   <div class="overlay">
-    <h1>🌴 Final Countdown... 🌴</h1>
+    <h1>🐧 Final Countdown... 🐧</h1>
     <div id="countdown"></div>
   </div>
 
   <script>
-    const targetDate = new Date("2025-10-02T15:50:00").getTime();
+    const targetDate = new Date("2025-10-02T15:50:00");
 
-    function updateCountdown() {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
-
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-      document.getElementById("countdown").innerHTML =
-        `${days}d ${hours}h ${minutes}m ${seconds}s`;
-
-      if (distance < 0) {
-        document.getElementById("countdown").innerHTML = "Freedom! 🎉";
+    // Function to count only weekdays
+    function getWorkdaysBetween(start, end) {
+      let count = 0;
+      let current = new Date(start);
+      while (current < end) {
+        const day = current.getDay();
+        if (day !== 0 && day !== 6) { // exclude Sunday (0) and Saturday (6)
+          count++;
+        }
+        current.setDate(current.getDate() + 1);
       }
+      return count;
     }
 
-    updateCountdown(); // run immediately so it doesn’t wait 1s
+    function updateCountdown() {
+      const now = new Date();
+
+      if (now >= targetDate) {
+        document.getElementById("countdown").innerHTML = "Freedom! 🎉";
+        return;
+      }
+
+      // Workdays left
+      const workdays = getWorkdaysBetween(now, targetDate);
+
+      // Work hours/min/sec left in the current day (9–17 for example)
+      const workStart = new Date(now);
+      workStart.setHours(9, 0, 0, 0);
+      const workEnd = new Date(now);
+      workEnd.setHours(17, 0, 0, 0);
+
+      let hours = 0, minutes = 0, seconds = 0;
+
+      if (now >= workStart && now <= workEnd) {
+        const diff = targetDate - now;
+        hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      }
+
+      document.getElementById("countdown").innerHTML =
+        `${workdays} workdays ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    updateCountdown();
     setInterval(updateCountdown, 1000);
   </script>
 </body>
